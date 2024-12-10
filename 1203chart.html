@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    購入された本のジャンル別割合 売上冊数と売上
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pie Chart Update</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      .controls {
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <br />
+    <a href="1203c.html">詳細に飛ぶ</a>
+    <div class="controls">
+      <button onclick="updateChart('books')">books</button>
+      <button onclick="updateChart('sales')">sales</button>
+    </div>
+    <div id="chart"></div>
+
+    <script>
+      // データの定義
+      const data = [
+        { books: 53245, sales: 200 },
+        { books: 28479, sales: 200 },
+        { books: 19697, sales: 200 },
+        { books: 24037, sales: 200 },
+        { books: 40245, sales: 200 },
+      ];
+
+      // チャートの設定
+      const width = 500;
+      const height = 500;
+      const outerRadius = Math.min(width, height) / 2 - 10;
+      const innerRadius = outerRadius * 0.75;
+      const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+      const svg = d3
+        .select("#chart")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+      const arc = d3.arc().innerRadius(innerRadius).outerRadius(outerRadius);
+
+      const pie = d3
+        .pie()
+        .sort(null)
+        .value((d) => d.books);
+
+      const path = svg
+        .selectAll("path")
+        .data(pie(data))
+        .join("path")
+        .attr("fill", (d, i) => color(i))
+        .attr("d", arc)
+        .each(function (d) {
+          this._current = d;
+        });
+
+      // チャートを更新する関数
+      function updateChart(value) {
+        pie.value((d) => d[value]);
+        path.data(pie(data));
+        path
+          .transition()
+          .duration(750)
+          .attrTween("d", function (d) {
+            const interpolate = d3.interpolate(this._current, d);
+            this._current = interpolate(1);
+            return (t) => arc(interpolate(t));
+          });
+      }
+    </script>
+  </body>
+</html>
